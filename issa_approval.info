@@ -1,0 +1,17 @@
+; @author Klaas Eikelboom (CiviCooP)
+; @date 19 Jan 2018
+; @license AGPL-3.0
+name = ISSA Approval
+description = Views and functions for the ILGA membership approval process.
+core = 7.x
+version = "7.x-1.1"
+package = Issa
+dependencies[] = civicrm (>=4.7)
+dependencies[] = views
+
+; general libraries
+files[] = includes/issa_approval_config.inc
+files[] = includes/issa_approval_helper.inc
+; field handlers
+files[] = views/plugins/issa_approval_handler_field_did_i_comment.inc
+files[] = views/plugins/issa_approval_handler_field_approval_link.inc

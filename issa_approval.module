@@ -1,0 +1,53 @@
+<?php
+/**
+ * Custom Drupal module for the ISSA Membership approval process
+ *
+ * @author Klaas Eikelboom (CiviCooP)
+ * @date 19 Jan 2017
+ * @license AGPL-3.0
+ */
+
+
+function issa_approval_menu() {
+    $items = array();
+    $items['admin/config/system/issa-approval'] = array(
+        'title' => 'Issa custom module',
+        'description' => 'Configuration of the approval module',
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('_issa_approval_config_form'),
+        'access arguments' => array('access administration pages'),
+        'type' => MENU_NORMAL_ITEM,
+    );
+    return $items;
+}
+
+
+function _issa_approval_config_form($form, &$form_state){
+
+    $query = db_query("SELECT nid, title FROM {node} where type='webform'");
+    $options = array();
+    $records = $query->fetchAll();
+    foreach($records as $record){
+        $options[$record->nid] = $record->title;
+    }
+
+    $form['info'] = array(
+      '#type' => 'markup',
+      '#markup' => 'Form for approval configuration',
+    );
+    $form['issa_approval_webform_nid'] = array(
+       '#type' => 'select',
+        '#options' => $options,
+        '#default_value' => variable_get('issa_approval_webform_nid', array_keys($options)[0]),
+    );
+
+    return system_settings_form($form);
+}
+
+/* hook_views_api() */
+function issa_approval_views_api() {
+    return [
+        'api' => 3.0,
+        'path' => drupal_get_path('module', 'issa_approval') . '/views',
+    ];
+}
