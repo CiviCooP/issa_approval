@@ -8,7 +8,8 @@
  */
 
 
-function issa_approval_menu() {
+function issa_approval_menu()
+{
     $items = array();
     $items['admin/config/system/issa-approval'] = array(
         'title' => 'Issa custom module',
@@ -18,25 +19,50 @@ function issa_approval_menu() {
         'access arguments' => array('access administration pages'),
         'type' => MENU_NORMAL_ITEM,
     );
+    $items['issa-approval/check-list'] = array(
+        'title' => 'Check the approval steps',
+        'description' => 'Configuration of the approval module',
+        'page callback' => '_issa_approval_checklist',
+        'page arguments' => array('_issa_approval_checklist'),
+        'access arguments' => array('access content'),
+        'type' => MENU_NORMAL_ITEM,
+    );
     return $items;
 }
 
+function _issa_approval_checklist()
+{
+    $items = array('Step 1','Step 2','Step 3');
 
-function _issa_approval_config_form($form, &$form_state){
+    $output = array(
+        'introduction' => array(
+            '#type' => 'markup',
+            '#markup' => '<p>The different steps in the approval process</p>'
+        ),
+        'steps' => array(
+            array(
+                '#items' => $items,
+                '#theme' => 'item_list',
+            ),
+        )
+    );
+    return $output;
+}
 
-    $query = db_query("SELECT nid, title FROM {node} where type='webform'");
+
+function _issa_approval_config_form($form, &$form_state)
+{
+
+    $query = db_query("SELECT nid, title FROM {node} WHERE type='webform'");
     $options = array();
     $records = $query->fetchAll();
-    foreach($records as $record){
+    foreach ($records as $record) {
         $options[$record->nid] = $record->title;
     }
 
-    $form['info'] = array(
-      '#type' => 'markup',
-      '#markup' => 'Form for approval configuration',
-    );
     $form['issa_approval_webform_nid'] = array(
-       '#type' => 'select',
+        "#title" => 'Select the webform, that must be used for the approval',
+        '#type' => 'select',
         '#options' => $options,
         '#default_value' => variable_get('issa_approval_webform_nid', array_keys($options)[0]),
     );
@@ -45,7 +71,8 @@ function _issa_approval_config_form($form, &$form_state){
 }
 
 /* hook_views_api() */
-function issa_approval_views_api() {
+function issa_approval_views_api()
+{
     return [
         'api' => 3.0,
         'path' => drupal_get_path('module', 'issa_approval') . '/views',
