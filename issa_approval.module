@@ -54,20 +54,65 @@ function _issa_approval_config_form($form, &$form_state)
 {
 
     $query = db_query("SELECT nid, title FROM {node} WHERE type='webform'");
-    $options = array();
+    $webformOptions = array();
     $records = $query->fetchAll();
     foreach ($records as $record) {
-        $options[$record->nid] = $record->title;
+        $webformOptions[$record->nid] = $record->title;
+    }
+
+
+    civicrm_initialize();
+    $result = civicrm_api3('RelationshipType','get',array());
+    $relationshipTypeOptions = array();
+    foreach($result['values'] as $value){
+        if(isset($value['description'])) {
+            $relationshipTypeOptions[$value['id']] = $value['description'];
+        }
     }
 
     $form['issa_approval_webform_nid'] = array(
         "#title" => 'Select the webform, that must be used for the approval',
         '#type' => 'select',
-        '#options' => $options,
-        '#default_value' => variable_get('issa_approval_webform_nid', array_keys($options)[0]),
+        '#options' => $webformOptions,
+        '#default_value' => variable_get('issa_approval_webform_nid', array_keys($webformOptions)[0]),
+    );
+
+    $form['issa_approval_employee_type_id'] = array(
+        "#title" => 'Select the relationships that defines the collegues (maybe employee?)',
+        '#type' => 'select',
+        '#options' => $relationshipTypeOptions,
+        '#default_value' => variable_get('issa_approval_employee_type_id', 5),
     );
 
     return system_settings_form($form);
+}
+
+/* colleagues block */
+function issa_approval_block_info() {
+    $blocks['issa_approval_colleagues'] = array(
+        // info: The name of the block.
+        'info' => t('Colleagues'),
+    );
+    return $blocks;
+}
+
+function issa_approval_block_view($delta = '')
+{
+    $block = array();
+    switch ($delta) {
+        case 'issa_approval_colleagues':
+            $colleagues = issa_approval_helper::colleagues(issa_approval_helper::currentUser());
+            $block['subject'] = t('Your organisation');
+            $block['content'] = array(
+                'colleagues' => array(
+                    array(
+                        '#items' => $colleagues,
+                        '#theme' => 'item_list',
+                    ),
+                ));
+            break;
+    }
+    return $block;
 }
 
 /* hook_views_api() */
