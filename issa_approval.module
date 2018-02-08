@@ -7,119 +7,210 @@
  * @license AGPL-3.0
  */
 
+const ISSA_APPROVAL_EMPLOYEE_TYPE_ID = 'issa_approval_employee_type_id';
+const ISSA_APPROVAL_CONTACTPERSON_TYPE_ID = 'issa_approval_contactperson_type_id';
+const ISSA_APPROVAL_WEBFORM_NID = 'issa_approval_webform_nid';
+const ISSA_APPROVAL_MEMBER_REGISTRATION_NID = 'issa_approval_member_registration_nid';
+const ISSA_APPROVAL_DOCUMENTS_NID = 'issa_approval_documents_nid';
+const ISSA_APPROVAL_LETTER_NID = 'issa_approval_letter_nid';
+const ISSA_APPROVAL_COLLEAGUES_NID = 'issa_approval_colleagues_nid';
 
-function issa_approval_menu()
-{
-    $items = array();
-    $items['admin/config/system/issa-approval'] = array(
-        'title' => 'Issa custom module',
-        'description' => 'Configuration of the approval module',
-        'page callback' => 'drupal_get_form',
-        'page arguments' => array('_issa_approval_config_form'),
-        'access arguments' => array('access administration pages'),
-        'type' => MENU_NORMAL_ITEM,
-    );
-    $items['issa-approval/check-list'] = array(
-        'title' => 'Check the approval steps',
-        'description' => 'Configuration of the approval module',
-        'page callback' => '_issa_approval_checklist',
-        'page arguments' => array('_issa_approval_checklist'),
-        'access arguments' => array('access content'),
-        'type' => MENU_NORMAL_ITEM,
-    );
-    return $items;
+function issa_approval_menu() {
+  $items = [];
+  $items['admin/config/system/issa-approval'] = [
+    'title' => 'Issa custom module',
+    'description' => 'Configuration of the approval module',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => ['_issa_approval_config_form'],
+    'access arguments' => ['access administration pages'],
+    'type' => MENU_NORMAL_ITEM,
+  ];
+  $items['issa-approval/check-list'] = [
+    'title' => 'Check the approval steps',
+    'description' => 'Configuration of the approval module',
+    'page callback' => '_issa_approval_checklist',
+    'access arguments' => ['access content'],
+    'type' => MENU_NORMAL_ITEM,
+  ];
+  $items['issa-approval/membership_registration'] = [
+    'title' => 'Check the approval steps',
+    'description' => 'Configuration of the approval module',
+    'page callback' => '_issa_approval_membership_registration',
+    'access arguments' => ['access content'],
+    'type' => MENU_NORMAL_ITEM,
+  ];
+  return $items;
 }
 
-function _issa_approval_checklist()
-{
-    $items = array('Step 1','Step 2','Step 3');
+function _issa_approval_checklist() {
 
-    $output = array(
-        'introduction' => array(
-            '#type' => 'markup',
-            '#markup' => '<p>The different steps in the approval process</p>'
-        ),
-        'steps' => array(
-            array(
-                '#items' => $items,
-                '#theme' => 'item_list',
-            ),
-        )
-    );
-    return $output;
+  $output = [];
+
+  if (!issa_approval_helper::webform_submitted(ISSA_APPROVAL_MEMBER_REGISTRATION_NID)) {
+    drupal_goto(issa_approval_helper::webform_link(ISSA_APPROVAL_MEMBER_REGISTRATION_NID));
+  }
+  else {
+    $reglink = l('submission', issa_approval_helper::webform_link(ISSA_APPROVAL_MEMBER_REGISTRATION_NID));
+    $output['registration'] = [
+      '#type' => 'markup',
+      '#markup' => "<p>Your have submitted your membership registration. View your $reglink</p>",
+    ];
+  }
+
+  if (!issa_approval_helper::webform_submitted(ISSA_APPROVAL_DOCUMENTS_NID)) {
+    $doclink = l('documents', issa_approval_helper::webform_link(ISSA_APPROVAL_DOCUMENTS_NID));
+    $output['approval_docs'] = [
+      '#type' => 'markup',
+      '#markup' => "<p>You must add documents with the $doclink form</p>",
+    ];
+  }
+  else {
+    $doclink = l('documents', issa_approval_helper::webform_link(ISSA_APPROVAL_DOCUMENTS_NID));
+    $output['approval_docs'] = [
+      '#type' => 'markup',
+      '#markup' => "<p>You have submitted the documents. View them with $doclink form</p>",
+    ];
+
+  }
+
+  if (!issa_approval_helper::webform_submitted(ISSA_APPROVAL_LETTER_NID)) {
+    $letterlink = l('letter of commitment', issa_approval_helper::webform_link(ISSA_APPROVAL_LETTER_NID));
+    $output['letter'] = [
+      '#type' => 'markup',
+      '#markup' => "<p>You must add a letter of commitment with the $letterlink form</p>",
+    ];
+  }
+  else {
+    $letterlink = l('letter of commitment', issa_approval_helper::webform_link(ISSA_APPROVAL_LETTER_NID));
+    $output['letter'] = [
+      '#type' => 'markup',
+      '#markup' => "<p>You have submitted the letter of commitment. View them with $letterlink form</p>",
+    ];
+
+  }
+
+
+  return $output;
 }
 
+function _issa_approval_membership_registration() {
+  issa_approval_helper::webform_link(ISSA_APPROVAL_MEMBER_REGISTRATION_NID);
+}
 
-function _issa_approval_config_form($form, &$form_state)
-{
+function _issa_approval_config_form($form, &$form_state) {
 
-    $query = db_query("SELECT nid, title FROM {node} WHERE type='webform'");
-    $webformOptions = array();
-    $records = $query->fetchAll();
-    foreach ($records as $record) {
-        $webformOptions[$record->nid] = $record->title;
+  $query = db_query("SELECT nid, title FROM {node} WHERE type='webform'");
+  $webformOptions = [];
+  $records = $query->fetchAll();
+  foreach ($records as $record) {
+    $webformOptions[$record->nid] = $record->title;
+  }
+
+
+  civicrm_initialize();
+  $result = civicrm_api3('RelationshipType', 'get', []);
+  $relationshipTypeOptions = [];
+  foreach ($result['values'] as $value) {
+    if (isset($value['description'])) {
+      $relationshipTypeOptions[$value['id']] = $value['description'];
     }
+  }
 
+  $form[ISSA_APPROVAL_WEBFORM_NID] = [
+    "#title" => 'Select the webform, that must be used for the approval',
+    '#type' => 'select',
+    '#options' => $webformOptions,
+    '#default_value' => variable_get(ISSA_APPROVAL_WEBFORM_NID, array_keys($webformOptions)[0]),
+  ];
 
-    civicrm_initialize();
-    $result = civicrm_api3('RelationshipType','get',array());
-    $relationshipTypeOptions = array();
-    foreach($result['values'] as $value){
-        if(isset($value['description'])) {
-            $relationshipTypeOptions[$value['id']] = $value['description'];
-        }
-    }
+  $form[ISSA_APPROVAL_MEMBER_REGISTRATION_NID] = [
+    "#title" => 'Select the webform, that must be used for the member registration',
+    '#type' => 'select',
+    '#options' => $webformOptions,
+    '#default_value' => variable_get(ISSA_APPROVAL_MEMBER_REGISTRATION_NID, array_keys($webformOptions)[0]),
+  ];
 
-    $form['issa_approval_webform_nid'] = array(
-        "#title" => 'Select the webform, that must be used for the approval',
-        '#type' => 'select',
-        '#options' => $webformOptions,
-        '#default_value' => variable_get('issa_approval_webform_nid', array_keys($webformOptions)[0]),
-    );
+  $form[ISSA_APPROVAL_DOCUMENTS_NID] = [
+    "#title" => 'Select the webform, that must be used to upload the documents',
+    '#type' => 'select',
+    '#options' => $webformOptions,
+    '#default_value' => variable_get(ISSA_APPROVAL_DOCUMENTS_NID, array_keys($webformOptions)[0]),
+  ];
 
-    $form['issa_approval_employee_type_id'] = array(
-        "#title" => 'Select the relationships that defines the collegues (maybe employee?)',
-        '#type' => 'select',
-        '#options' => $relationshipTypeOptions,
-        '#default_value' => variable_get('issa_approval_employee_type_id', 5),
-    );
+  $form[ISSA_APPROVAL_LETTER_NID] = [
+    "#title" => 'Select the webform, that must be used to upload the letter of commitment',
+    '#type' => 'select',
+    '#options' => $webformOptions,
+    '#default_value' => variable_get(ISSA_APPROVAL_LETTER_NID, array_keys($webformOptions)[0]),
+  ];
 
-    return system_settings_form($form);
+  $form[ISSA_APPROVAL_EMPLOYEE_TYPE_ID] = [
+    "#title" => 'Select the relationships that defines the colleagues (maybe employee?)',
+    '#type' => 'select',
+    '#options' => $relationshipTypeOptions,
+    '#default_value' => variable_get(ISSA_APPROVAL_EMPLOYEE_TYPE_ID, 5),
+  ];
+
+  $form[ISSA_APPROVAL_CONTACTPERSON_TYPE_ID] = [
+    "#title" => 'Select the relationship that defines the contactperson of the organisation',
+    '#type' => 'select',
+    '#options' => $relationshipTypeOptions,
+    '#default_value' => variable_get(ISSA_APPROVAL_CONTACTPERSON_TYPE_ID, 5),
+  ];
+
+  return system_settings_form($form);
 }
 
 /* colleagues block */
 function issa_approval_block_info() {
-    $blocks['issa_approval_colleagues'] = array(
-        // info: The name of the block.
-        'info' => t('Colleagues'),
-    );
-    return $blocks;
+  $blocks['issa_approval_colleagues'] = [
+    'info' => t('Colleagues'),
+  ];
+  $blocks['issa_approval_applicant_menu'] = [
+    'info' => t('Applicant Menu'),
+  ];
+  return $blocks;
 }
 
-function issa_approval_block_view($delta = '')
-{
-    $block = array();
-    switch ($delta) {
-        case 'issa_approval_colleagues':
-            $colleagues = issa_approval_helper::colleagues(issa_approval_helper::currentUser());
-            $block['subject'] = t('Your organisation');
-            $block['content'] = array(
-                'colleagues' => array(
-                    array(
-                        '#items' => $colleagues,
-                        '#theme' => 'item_list',
-                    ),
-                ));
-            break;
-    }
-    return $block;
+function issa_approval_block_view($delta = '') {
+  $block = [];
+  switch ($delta) {
+    case 'issa_approval_colleagues':
+      $colleagues = issa_approval_helper::colleagues(issa_approval_helper::currentUser());
+      $block['subject'] = t('Your organisation');
+      $block['content'] = [
+        'colleagues' => [
+          [
+            '#items' => $colleagues,
+            '#theme' => 'item_list',
+          ],
+        ],
+      ];
+      break;
+    case 'issa_approval_applicant_menu':
+      $block['subject'] = t('Applicant');
+      $links = [
+        l('Our application form', issa_approval_helper::webform_link(ISSA_APPROVAL_MEMBER_REGISTRATION_NID)),
+        l('Upload your documents', issa_approval_helper::webform_link(ISSA_APPROVAL_DOCUMENTS_NID)),
+        l('Letter of commitment', issa_approval_helper::webform_link(ISSA_APPROVAL_LETTER_NID)),
+      ];
+      $block['content'] = [
+        'links' => [
+          [
+            '#items' => $links,
+            '#theme' => 'item_list',
+          ],
+        ],
+      ];
+      break;
+  }
+  return $block;
 }
 
 /* hook_views_api() */
-function issa_approval_views_api()
-{
-    return [
-        'api' => 3.0,
-        'path' => drupal_get_path('module', 'issa_approval') . '/views',
-    ];
+function issa_approval_views_api() {
+  return [
+    'api' => 3.0,
+    'path' => drupal_get_path('module', 'issa_approval') . '/views',
+  ];
 }
