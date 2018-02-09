@@ -8,12 +8,26 @@
  */
 
 const ISSA_APPROVAL_EMPLOYEE_TYPE_ID = 'issa_approval_employee_type_id';
+/**
+ * technical id of the relationship type of a contact person
+ * is set in the administration page
+ */
 const ISSA_APPROVAL_CONTACTPERSON_TYPE_ID = 'issa_approval_contactperson_type_id';
 const ISSA_APPROVAL_WEBFORM_NID = 'issa_approval_webform_nid';
 const ISSA_APPROVAL_MEMBER_REGISTRATION_NID = 'issa_approval_member_registration_nid';
 const ISSA_APPROVAL_DOCUMENTS_NID = 'issa_approval_documents_nid';
 const ISSA_APPROVAL_LETTER_NID = 'issa_approval_letter_nid';
 const ISSA_APPROVAL_COLLEAGUES_NID = 'issa_approval_colleagues_nid';
+const ISSA_APPROVAL_PERMISSION = 'issa approval check list';
+
+function issa_approval_permission() {
+  return [
+    ISSA_APPROVAL_PERMISSION => [
+      'title' => t('Check list for applicants'),
+      'description' => t('Use the ISSA approval check list for applicants.'),
+    ],
+  ];
+}
 
 function issa_approval_menu() {
   $items = [];
@@ -29,7 +43,7 @@ function issa_approval_menu() {
     'title' => 'Check the approval steps',
     'description' => 'Configuration of the approval module',
     'page callback' => '_issa_approval_checklist',
-    'access arguments' => ['access content'],
+    'access arguments' => [ISSA_APPROVAL_PERMISSION],
     'type' => MENU_NORMAL_ITEM,
   ];
   $items['issa-approval/membership_registration'] = [
@@ -42,10 +56,18 @@ function issa_approval_menu() {
   return $items;
 }
 
+/**
+ * Generates a page that the applicant can use as checklist to see
+ * what actions he has to do to complete the member registration process.
+ *
+ * @return array
+ */
 function _issa_approval_checklist() {
 
   $output = [];
 
+  // if no memberregistration is known the applicant is directly
+  // redirected to the registration form
   if (!issa_approval_helper::webform_submitted(ISSA_APPROVAL_MEMBER_REGISTRATION_NID)) {
     drupal_goto(issa_approval_helper::webform_link(ISSA_APPROVAL_MEMBER_REGISTRATION_NID));
   }
@@ -53,7 +75,7 @@ function _issa_approval_checklist() {
     $reglink = l('submission', issa_approval_helper::webform_link(ISSA_APPROVAL_MEMBER_REGISTRATION_NID));
     $output['registration'] = [
       '#type' => 'markup',
-      '#markup' => "<p>Your have submitted your membership registration. View your $reglink</p>",
+      '#markup' => "<p>[x] Your have submitted your membership registration. View your $reglink</p>",
     ];
   }
 
@@ -61,14 +83,14 @@ function _issa_approval_checklist() {
     $doclink = l('documents', issa_approval_helper::webform_link(ISSA_APPROVAL_DOCUMENTS_NID));
     $output['approval_docs'] = [
       '#type' => 'markup',
-      '#markup' => "<p>You must add documents with the $doclink form</p>",
+      '#markup' => "<p>[ ]You must add documents with the $doclink form</p>",
     ];
   }
   else {
     $doclink = l('documents', issa_approval_helper::webform_link(ISSA_APPROVAL_DOCUMENTS_NID));
     $output['approval_docs'] = [
       '#type' => 'markup',
-      '#markup' => "<p>You have submitted the documents. View them with $doclink form</p>",
+      '#markup' => "<p>[x] You have submitted the documents. View them with $doclink form</p>",
     ];
 
   }
@@ -77,18 +99,39 @@ function _issa_approval_checklist() {
     $letterlink = l('letter of commitment', issa_approval_helper::webform_link(ISSA_APPROVAL_LETTER_NID));
     $output['letter'] = [
       '#type' => 'markup',
-      '#markup' => "<p>You must add a letter of commitment with the $letterlink form</p>",
+      '#markup' => "<p>[ ] You must add a letter of commitment with the $letterlink form</p>",
     ];
   }
   else {
     $letterlink = l('letter of commitment', issa_approval_helper::webform_link(ISSA_APPROVAL_LETTER_NID));
     $output['letter'] = [
       '#type' => 'markup',
-      '#markup' => "<p>You have submitted the letter of commitment. View them with $letterlink form</p>",
+      '#markup' => "<p>[x] You have submitted the letter of commitment. View them with $letterlink form</p>",
     ];
-
   }
 
+  $colleagues = issa_approval_helper::colleagues(issa_approval_helper::currentUser());
+  $collink = l('Add colleagues', 'add-colleagues');
+  if (empty($colleagues)) {
+    $output['colleagues'] = [
+      '#type' => 'markup',
+      '#markup' => "<p>You did not enter colleagues, you can do so with $collink</p>",
+    ];
+  }
+  else {
+    $output['colleagues-pre'] = [
+      '#type' => 'markup',
+      '#markup' => "<p>You added the following colleagus:</p>",
+    ];
+    $output['colleagues-list'] = [
+      '#items' => $colleagues,
+      '#theme' => 'item_list',
+    ];
+    $output['colleagues'] = [
+      '#type' => 'markup',
+      '#markup' => "<p>Complete it with $collink</p>",
+    ];
+  }
 
   return $output;
 }

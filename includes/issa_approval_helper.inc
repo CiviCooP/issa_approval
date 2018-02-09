@@ -7,12 +7,18 @@
  */
 class issa_approval_helper {
 
+  /**
+   * @return int Contact ID of the user that is logged in
+   */
   public static function currentUser() {
     civicrm_initialize();
     $session = CRM_Core_Session::singleton();
     return $session->get('userID');
   }
 
+  /**
+   * @return string
+   */
   static public function commentActivitySQL() {
     $config = issa_approval_config::singleton();
     return "SELECT act.id AS activity_id
@@ -27,6 +33,11 @@ class issa_approval_helper {
          ";
   }
 
+  /**
+   * @param $contactId
+   *
+   * @return null|string
+   */
   static public function commentActivity($contactId) {
 
     return CRM_Core_DAO::singleValueQuery(self::commentActivitySQL(), [
@@ -35,6 +46,12 @@ class issa_approval_helper {
     ]);
   }
 
+  /**
+   * @param $contactId
+   *
+   * @return array of colleagues. A colleague is a individual that is employed
+   * by the organisation you are contact person for.
+   */
   static public function colleagues($contactId) {
     $dao = CRM_Core_DAO::executeQuery("
         SELECT c.display_name FROM civicrm_contact c
@@ -53,6 +70,12 @@ class issa_approval_helper {
     return $result;
   }
 
+  /**
+   * @param $webform identifies the webform by its node id (better use a constant)
+   *
+   * @return bool is the webform submitted by the current user (draft means not
+   * submitted).
+   */
   static public function webform_submitted($webform) {
     global $user;
     $query = "SELECT 1 FROM {webform_submissions} WHERE nid=:nid AND uid=:uid AND is_draft=0";
@@ -63,6 +86,11 @@ class issa_approval_helper {
 
   }
 
+  /**
+   * @param $webform
+   *
+   * @return int submission id of a submitted webform (remark, does not check on draft)
+   */
   static public function webform_submission_id($webform) {
     global $user;
     $query = "SELECT sid FROM {webform_submissions} WHERE nid=:nid AND uid=:uid LIMIT 1";
@@ -72,6 +100,15 @@ class issa_approval_helper {
     ])->fetchField();
   }
 
+  /**
+   * This function takes care of submitting a webform once. If an user
+   * dit not submit a webform it goes to the submission link.
+   * If submitted it links to the submission
+   *
+   * @param $webform
+   *
+   * @return string link to a submitted or not submitted webform.
+   */
   static public function webform_link($webform) {
     $nodeurl = 'node/' . variable_get($webform);
     if (issa_approval_helper::webform_submitted($webform)) {
