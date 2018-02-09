@@ -154,8 +154,8 @@ function _issa_approval_config_form($form, &$form_state) {
   $result = civicrm_api3('RelationshipType', 'get', []);
   $relationshipTypeOptions = [];
   foreach ($result['values'] as $value) {
-    if (isset($value['description'])) {
-      $relationshipTypeOptions[$value['id']] = $value['description'];
+    if (isset($value['label_a_b'])) {
+      $relationshipTypeOptions[$value['id']] = $value['label_a_b'];
     }
   }
 
