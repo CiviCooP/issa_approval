@@ -46,13 +46,13 @@ function issa_approval_menu() {
     'access arguments' => [ISSA_APPROVAL_PERMISSION],
     'type' => MENU_NORMAL_ITEM,
   ];
-  $items['issa-approval/membership_registration'] = [
-    'title' => 'Check the approval steps',
-    'description' => 'Configuration of the approval module',
-    'page callback' => '_issa_approval_membership_registration',
-    'access arguments' => ['access content'],
-    'type' => MENU_NORMAL_ITEM,
-  ];
+  $items['issa_approval/view-comments/%'] = array(
+    'title' => 'View comments',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('issa_approval_view_comments',2),
+    'access callback' => 'user_access',
+    'access arguments' => [ISSA_APPROVAL_PERMISSION],
+  );
   return $items;
 }
 
@@ -249,6 +249,69 @@ function issa_approval_block_view($delta = '') {
   }
   return $block;
 }
+
+function issa_approval_view_comments($form, &$form_state,$contactId) {
+
+  civicrm_initialize();
+  $config = issa_approval_config::singleton();
+  $sql = "SELECT act.id AS activity_id
+          ,      act.activity_date_time AS activity_date_time
+          ,      act.details AS activity_details
+          ,      ad.{$config->getApproveDenyCustomFields()['Approve']} approvedeny
+          ,      cnt.display_name AS display_name
+          ,      email.email AS email
+          FROM   civicrm_case cas
+          JOIN   civicrm_case_contact cc     ON (cc.case_id = cas.id AND cc.contact_id=%1)
+          JOIN   civicrm_case_activity cact  ON (cact.case_id = cas.id)
+          JOIN   civicrm_activity      act   ON (act.id = cact.activity_id AND act.is_deleted=0 AND act.activity_type_id ={$config->getApprovalActivityTypeId()} AND act.is_current_revision=1)
+          JOIN   civicrm_activity_contact acc ON (acc.activity_id = act.id and acc.record_type_id=2)
+          JOIN   civicrm_contact          cnt ON (acc.contact_id  = cnt.id)
+          JOIN   {$config->getApproveDenyCustomTable()} ad ON (ad.entity_id = act.id)
+          LEFT JOIN civicrm_email         email ON (email.contact_id=cnt.id AND email.is_primary=1)
+          WHERE  cas.case_type_id = {$config->getApprovalCaseTypeId()}
+         ";
+
+  $dao = CRM_Core_DAO::executeQuery($sql, [
+    '1' => [$contactId, 'Integer'],
+  ]);
+
+  $rows = [];
+  while ($dao->fetch()) {
+    $row = array(
+      'activity_date_time' => $dao->activity_date_time,
+      'activity_details' => $dao->activity_details,
+      'verdict' => $dao->approvedeny?'Yes':'No',
+      'display_name' => $dao->display_name,
+      'email' => $dao->email
+    );
+    $rows[$dao->activity_id]= $row;
+  }
+
+  $orgname = civicrm_api3('Contact','getvalue',array(
+    'id' => $contactId,
+    'return' => 'display_name'
+  ));
+
+  $form = array();
+  $form['case']['#markup'] = "Applicant : $orgname";
+
+  $form['comments']['table']['#theme'] = 'table';
+  $form['comments']['table']['#header'] = [
+    'Date','Details','Agreement','Board Member','Email Board Member'
+  ];
+  $form['comments']['table']['#rows'] = $rows;
+  $form['comments']['table']['#attributes'] = array('width' => '100%');
+
+  $form['submit']['#type'] = 'submit';
+  $form['submit']['#value'] = 'Back to approval view';
+  $form['submit']['#submit'] = array('_issa_approval_view_comments_submit');
+  return $form;
+}
+
+function _issa_approval_view_comments_submit(){
+  drupal_goto('member-applications');
+}
+
 
 /* hook_views_api() */
 function issa_approval_views_api() {
