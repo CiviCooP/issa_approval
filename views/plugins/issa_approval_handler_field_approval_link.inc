@@ -19,13 +19,16 @@ class issa_approval_handler_field_approval_link extends views_handler_field {
   function render($values) {
     $query = [
       'cid2' => issa_approval_helper::currentUser(),
-      'cid1' => $values->civicrm_case_contact_contact_id,
+      'cid1' => $values->id,
     ];
-    $result = issa_approval_helper::commentActivity($values->civicrm_case_contact_contact_id);
+    $result = issa_approval_helper::commentActivity($values->id);
     if ($result) {
+      $label = t('View your vote');
       $query['activity1'] = $result;
+    } else {
+      $label = 'Approve';
     }
-    return l('Approve', 'node/' . variable_get('issa_approval_webform_nid'), [
+    return l($label, 'node/' . variable_get('issa_approval_webform_nid'), [
         "query" => $query,
       ]
     );

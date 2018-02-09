@@ -21,8 +21,8 @@ class issa_approval_helper {
    */
   static public function commentActivitySQL() {
     $config = issa_approval_config::singleton();
-    return "SELECT act.id AS activity_id
-          ,      ad.{$config->getApproveDenyCustomFields()['Approve']} approvedeny
+    $sql = "SELECT act.id AS activity_id
+          ,      ad.{$config->getApproveDenyCustomFields()['Approve']} approvedeny 
           FROM   civicrm_case cas
           JOIN   civicrm_case_contact cc     ON (cc.case_id = cas.id AND cc.contact_id=%1)
           JOIN   civicrm_case_activity cact  ON (cact.case_id = cas.id) 
@@ -31,6 +31,7 @@ class issa_approval_helper {
           JOIN   {$config->getApproveDenyCustomTable()} ad ON (ad.entity_id = act.id)
           where  cas.case_type_id = {$config->getApprovalCaseTypeId()}
          ";
+    return $sql;
   }
 
   /**
