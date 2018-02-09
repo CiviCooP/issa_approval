@@ -46,7 +46,7 @@ function issa_approval_menu() {
     'access arguments' => [ISSA_APPROVAL_PERMISSION],
     'type' => MENU_NORMAL_ITEM,
   ];
-  $items['issa_approval/view-comments/%'] = array(
+  $items['issa-approval/view-comments/%'] = array(
     'title' => 'View comments',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('issa_approval_view_comments',2),
