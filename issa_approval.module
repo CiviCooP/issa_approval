@@ -236,6 +236,8 @@ function issa_approval_block_view($delta = '') {
         l('Our application form', issa_approval_helper::webform_link(ISSA_APPROVAL_MEMBER_REGISTRATION_NID)),
         l('Upload your documents', issa_approval_helper::webform_link(ISSA_APPROVAL_DOCUMENTS_NID)),
         l('Letter of commitment', issa_approval_helper::webform_link(ISSA_APPROVAL_LETTER_NID)),
+        l('Add colleagues', 'add-colleagues'),
+        l('Member applications','Member applications')
       ];
       $block['content'] = [
         'links' => [
