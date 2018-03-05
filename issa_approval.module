@@ -21,6 +21,10 @@ const ISSA_APPROVAL_COLLEAGUES_NID = 'issa_approval_colleagues_nid';
 const ISSA_APPROVAL_EMPLOYEE_NID = 'issa_approval_employees_nid';
 const ISSA_APPROVAL_PERMISSION = 'issa approval check list';
 
+/**
+ * Implementation of the permission hook
+ * @return array
+ */
 function issa_approval_permission() {
   return [
     ISSA_APPROVAL_PERMISSION => [
@@ -30,6 +34,10 @@ function issa_approval_permission() {
   ];
 }
 
+/**
+ * implementation of the menu hook
+ * @return array
+ */
 function issa_approval_menu() {
   $items = [];
   $items['admin/config/system/issa-approval'] = [
@@ -137,10 +145,23 @@ function _issa_approval_checklist() {
   return $output;
 }
 
+/**
+ * generates link to the membership approval form
+ */
 function _issa_approval_membership_registration() {
   issa_approval_helper::webform_link(ISSA_APPROVAL_MEMBER_REGISTRATION_NID);
 }
 
+/**
+ * Admin form for the configuration of all the webforms that are
+ * part of this module
+ *
+ * @param $form
+ * @param $form_state
+ *
+ * @return mixed
+ * @throws \CiviCRM_API3_Exception
+ */
 function _issa_approval_config_form($form, &$form_state) {
 
   $query = db_query("SELECT nid, title FROM {node} WHERE type='webform'");
@@ -149,7 +170,6 @@ function _issa_approval_config_form($form, &$form_state) {
   foreach ($records as $record) {
     $webformOptions[$record->nid] = $record->title;
   }
-
 
   civicrm_initialize();
   $result = civicrm_api3('RelationshipType', 'get', []);
@@ -212,7 +232,10 @@ function _issa_approval_config_form($form, &$form_state) {
   return system_settings_form($form);
 }
 
-/* colleagues block */
+/**
+ * Implementation of a hook that adds blocks
+ * @return mixed
+ */
 function issa_approval_block_info() {
   $blocks['issa_approval_colleagues'] = [
     'info' => t('Colleagues'),
@@ -223,6 +246,12 @@ function issa_approval_block_info() {
   return $blocks;
 }
 
+/**
+ * Implementation of a hook that adds blocks
+ * @param string $delta
+ *
+ * @return array
+ */
 function issa_approval_block_view($delta = '') {
   $block = [];
   switch ($delta) {
@@ -260,7 +289,17 @@ function issa_approval_block_view($delta = '') {
   return $block;
 }
 
-function issa_approval_view_comments($form, &$form_state,$contactId) {
+/**
+ * Generates the form that shows the comments on a vote.
+ *
+ * @param $form
+ * @param $form_state
+ * @param $contactId
+ *
+ * @return array
+ * @throws \CiviCRM_API3_Exception
+ */
+function issa_approval_view_comments($form, &$form_state, $contactId) {
 
   civicrm_initialize();
   $config = issa_approval_config::singleton();
@@ -318,12 +357,18 @@ function issa_approval_view_comments($form, &$form_state,$contactId) {
   return $form;
 }
 
+/**
+ * Submit for returning to member applications
+ */
 function _issa_approval_view_comments_submit(){
   drupal_goto('member-applications');
 }
 
 
 /* hook_views_api() */
+/**
+ * @return array
+ */
 function issa_approval_views_api() {
   return [
     'api' => 3.0,
