@@ -208,4 +208,22 @@ class issa_approval_helper {
     }
   }
 
+  static public function approval_link($orgnId){
+    $query = [
+      'cid2' => issa_approval_helper::currentUser(),
+      'cid1' => $orgnId,
+    ];
+    $result = issa_approval_helper::commentActivity($orgnId);
+    if ($result) {
+      $label = t('View your vote');
+      $query['activity1'] = $result;
+    } else {
+      $label = 'Approve';
+    }
+    return l($label, 'node/' . variable_get('issa_approval_webform_nid'), [
+        "query" => $query,
+      ]
+    );
+  }
+
 }

@@ -213,11 +213,35 @@ function _issa_approval_board_checklist($orgnId){
 
   $colleagues = issa_approval_helper::colleagues($contactId);
 
-  $output['colleagues'] =
+  if($colleagues) {
+
+    $output['colheading'] = [
+      '#type' => 'markup',
+      '#markup' => '<h3>Colleagues</h3>'
+    ];
+
+    $output['colleagues'] =
       [
         '#items' => $colleagues,
         '#theme' => 'item_list',
       ];
+
+    $commentslink = l('comments','issa-approval/view-comments/'.$orgnId);
+
+    $output['comments'] = [
+      '#type' => 'markup',
+      '#markup' => "Review the {$commentslink}",
+    ];
+
+    $approvallink = issa_approval_helper::approval_link($orgnId);
+
+    $output['approval'] = [
+      '#type' => 'markup',
+      '#markup' => "<h3>Approval</h3><p>{$approvallink}</p>"
+    ];
+
+
+  }
 
   return $output;
 
