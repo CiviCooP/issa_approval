@@ -26,6 +26,10 @@ class issa_approval_config {
     $this->setUpTypeIds();
   }
 
+  /**
+   * Adds reading of the Approve Deny activity to the config
+   * @throws \Exception
+   */
   private function setUpApproveDeny() {
     try {
       $approveDenyCustomGroup = civicrm_api3('CustomGroup', 'getsingle', [
@@ -49,6 +53,9 @@ class issa_approval_config {
     }
   }
 
+  /**
+   * Adds the case type ids and the membership ids to the configuration
+   */
   private function setUpTypeIds() {
     try {
       $this->_approvalCaseTypeId = civicrm_api3('CaseType', 'getvalue', [
