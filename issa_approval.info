@@ -13,5 +13,5 @@ dependencies[] = views
 files[] = includes/issa_approval_config.inc
 files[] = includes/issa_approval_helper.inc
 ; field handlers
-files[] = views/plugins/issa_approval_handler_field_did_i_comment.inc
 files[] = views/plugins/issa_approval_handler_field_approval_link.inc
+files[] = views/plugins/issa_approval_handler_field_overview.inc

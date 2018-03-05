@@ -107,7 +107,7 @@ class issa_approval_config {
   /**
    * Method to return singleton object
    *
-   * @return object $_singleton
+   * @return issa_approval_config $_singleton
    * @access public
    * @static
    */

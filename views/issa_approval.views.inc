@@ -11,11 +11,11 @@ function issa_approval_views_data() {
     // #global is a special flag which let's a table appear all the time.
     '#global' => [],
   ];
-  $data['issa_approval']['did_i_comment'] = [
-    'title' => t('Did I comment'),
-    'help' => t('Did I comment on this application'),
+  $data['issa_approval']['overview'] = [
+    'title' => t('Overview'),
+    'help' => t('Overview for the board'),
     'field' => [
-      'handler' => 'issa_approval_handler_field_did_i_comment',
+      'handler' => 'issa_approval_handler_field_overview',
       'click sortable' => FALSE,
     ],
   ];

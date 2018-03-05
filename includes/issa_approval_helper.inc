@@ -48,6 +48,50 @@ class issa_approval_helper {
   }
 
   /**
+   * Finds a caseId starting from a client. Restricted to approval cases
+   * Assumption is that a contact has only one approval case
+   *
+   * @param $contactId
+   */
+  static public function caseId($contactId) {
+
+    civicrm_initialize();
+    $config = issa_approval_config::singleton();
+
+    return CRM_Core_DAO::singleValueQuery("
+     SELECT cc.case_id FROM civicrm_case_contact cc
+     JOIN civicrm_case c ON cc.case_id = c.id
+     WHERE c.case_type_id = %1 
+     AND   c.is_deleted=0 
+     AND   cc.contact_id = %2
+    ", [
+      1 => [$config->getApprovalCaseTypeId(), 'Integer'],
+      2 => [$contactId, 'Integer'],
+    ]);
+  }
+
+  /**
+   * find the contact person of an organization
+   * @param $orgnId
+   *
+   * @return null|string
+   */
+
+  static public function contactPerson($orgnId){
+    civicrm_initialize();
+
+    return CRM_Core_DAO::singleValueQuery("
+     SELECT r.contact_id_b FROM civicrm_relationship r
+     WHERE r.relationship_type_id = %1
+     AND   r.is_active = 1
+     AND   r.contact_id_a = %2
+    ", [
+      1 => [variable_get(ISSA_APPROVAL_CONTACTPERSON_TYPE_ID), 'Integer'],
+      2 => [$orgnId, 'Integer'],
+    ]);
+  }
+
+  /**
    * @param $contactId
    *
    * @return array of colleagues. A colleague is a individual that is employed
@@ -69,6 +113,40 @@ class issa_approval_helper {
       $result[] = $dao->display_name;
     }
     return $result;
+  }
+
+  /**
+   * @param $caseId
+   */
+  static public function caseSecretarialComments($caseId){
+    civicrm_initialize();
+    try {
+      return civicrm_api3('Case', 'getvalue', [
+        'return' => "custom_" . variable_get(ISSA_APPROVAL_SECRETARIAL_COMMENTS_FIELD_ID),
+        'id' => $caseId,
+      ]);
+    }
+    catch (CiviCRM_API3_Exception $ex){
+      return FALSE;
+    }
+  }
+
+  static public function webformSubmissionFromContactId($contactId,$webform_nid){
+    try {
+      $uid = civicrm_api3('UFMatch', 'getvalue', [
+        'return' => "uf_id",
+        'contact_id' => $contactId,
+      ]);
+    } catch (CiviCRM_API3_Exception $ex) {
+      return FALSE;
+    }
+
+    $sid = db_query("select sid from {webform_submissions} where uid = :uid and nid = :nid",array(
+      ':uid' => $uid,
+      ':nid' => variable_get($webform_nid)
+    ))->fetchField(0);
+
+    return $sid;
   }
 
   /**
@@ -117,6 +195,16 @@ class issa_approval_helper {
     }
     else {
       return $nodeurl;
+    }
+  }
+
+  static public function webform_view_link($contactId,$webform){
+    $nodeurl = 'node/' . variable_get($webform);
+    $sid = issa_approval_helper::webformSubmissionFromContactId($contactId,$webform);
+    if($sid){
+      return $nodeurl . '/submission/' . $sid;
+    } else {
+      return FALSE;
     }
   }
 

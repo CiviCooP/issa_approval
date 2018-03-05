@@ -20,6 +20,8 @@ const ISSA_APPROVAL_LETTER_NID = 'issa_approval_letter_nid';
 const ISSA_APPROVAL_COLLEAGUES_NID = 'issa_approval_colleagues_nid';
 const ISSA_APPROVAL_EMPLOYEE_NID = 'issa_approval_employees_nid';
 const ISSA_APPROVAL_PERMISSION = 'issa approval check list';
+const ISSA_APPROVAL_BOARD_PERMISSION = 'issa approval board';
+const ISSA_APPROVAL_SECRETARIAL_COMMENTS_FIELD_ID = 'issa_approval_secretarial_comments_field_id';
 
 /**
  * Implementation of the permission hook
@@ -54,6 +56,14 @@ function issa_approval_menu() {
     'page callback' => '_issa_approval_checklist',
     'access arguments' => [ISSA_APPROVAL_PERMISSION],
     'type' => MENU_NORMAL_ITEM,
+  ];
+  $items['issa-approval/board-check-list/%'] = [
+    'title' => 'Check the approval steps',
+    'description' => 'Configuration of the approval module',
+    'page callback' => '_issa_approval_board_checklist',
+    'page arguments' => array(2),
+    'access arguments' => [ISSA_APPROVAL_BOARD_PERMISSION],
+    'type' => MENU_CALLBACK,
   ];
   $items['issa-approval/view-comments/%'] = array(
     'title' => 'View comments',
@@ -146,6 +156,74 @@ function _issa_approval_checklist() {
 }
 
 /**
+ * Generates a page for a board member that needs a checklist
+ * to have alle the information for the approval
+ */
+
+function _issa_approval_board_checklist($orgnId){
+
+  $caseId = issa_approval_helper::caseId($orgnId);
+  if(empty($caseId)){
+    return "Oops - could not find a valid case for {$orgnId} ";
+  }
+
+  $contactId = issa_approval_helper::contactPerson($orgnId);
+  if(empty($contactId)){
+    return  "Oops - could not find a valid contact person for {$orgnId}";
+  }
+
+  $output = [];
+  $registrationTasks  = array(
+    array('text' => t('Membership registration form'),
+          'webform' => ISSA_APPROVAL_MEMBER_REGISTRATION_NID,
+    ),
+    array('text' => t('Uploaded documents'),
+      'webform' => ISSA_APPROVAL_DOCUMENTS_NID,
+    ),
+    array('text' => t('Letter of commitment'),
+      'webform' => ISSA_APPROVAL_LETTER_NID,
+    ),
+
+  );
+
+  $output['intro'] = [
+    '#type' => 'markup',
+    '#markup' => "<p>Hello this is a checklist for the board to show all the asked links and stuff</p>",
+  ];
+
+  $mc = issa_approval_helper::caseSecretarialComments($caseId);
+
+  if($mc){
+    $output['secreterial comments'] = [
+      '#type' => 'markup',
+      '#markup' => $mc
+    ];
+  }
+
+  foreach($registrationTasks as $task){
+    $nodeUrl = issa_approval_helper::webform_view_link($contactId,$task['webform']);
+    if($nodeUrl){
+        $taskLinks [] = l($task['text'],$nodeUrl);
+    }
+  }
+  $output['tasks'] = [
+    '#theme' => 'item_list',
+    '#items' => $taskLinks,
+  ];
+
+  $colleagues = issa_approval_helper::colleagues($contactId);
+
+  $output['colleagues'] =
+      [
+        '#items' => $colleagues,
+        '#theme' => 'item_list',
+      ];
+
+  return $output;
+
+}
+
+/**
  * generates link to the membership approval form
  */
 function _issa_approval_membership_registration() {
@@ -178,6 +256,19 @@ function _issa_approval_config_form($form, &$form_state) {
     if (isset($value['label_a_b'])) {
       $relationshipTypeOptions[$value['id']] = $value['label_a_b'];
     }
+  }
+
+  $result = $result = civicrm_api3('CustomField', 'get', array(
+    'sequential' => 1,
+    'is_active' => 1,
+    'options' => array(
+      'limit' => 0,
+      'sort'  => 'label',
+    ),
+  ));
+  $customFieldOptions = [];
+  foreach ($result['values'] as $value) {
+      $customFieldOptions[$value['id']] = $value['label'];
   }
 
   $form[ISSA_APPROVAL_WEBFORM_NID] = [
@@ -227,6 +318,13 @@ function _issa_approval_config_form($form, &$form_state) {
     '#type' => 'select',
     '#options' => $relationshipTypeOptions,
     '#default_value' => variable_get(ISSA_APPROVAL_CONTACTPERSON_TYPE_ID, 5),
+  ];
+
+  $form[ISSA_APPROVAL_SECRETARIAL_COMMENTS_FIELD_ID] = [
+    "#title" => 'Select the custom field of the secretarial comments',
+    '#type' => 'select',
+    '#options' => $customFieldOptions,
+    '#default_value' => variable_get(ISSA_APPROVAL_SECRETARIAL_COMMENTS_FIELD_ID, array_keys($customFieldOptions)[0]),
   ];
 
   return system_settings_form($form);
