@@ -18,6 +18,7 @@ const ISSA_APPROVAL_MEMBER_REGISTRATION_NID = 'issa_approval_member_registration
 const ISSA_APPROVAL_DOCUMENTS_NID = 'issa_approval_documents_nid';
 const ISSA_APPROVAL_LETTER_NID = 'issa_approval_letter_nid';
 const ISSA_APPROVAL_COLLEAGUES_NID = 'issa_approval_colleagues_nid';
+const ISSA_APPROVAL_EMPLOYEE_NID = 'issa_approval_employees_nid';
 const ISSA_APPROVAL_PERMISSION = 'issa approval check list';
 
 function issa_approval_permission() {
@@ -185,6 +186,13 @@ function _issa_approval_config_form($form, &$form_state) {
     '#type' => 'select',
     '#options' => $webformOptions,
     '#default_value' => variable_get(ISSA_APPROVAL_LETTER_NID, array_keys($webformOptions)[0]),
+  ];
+
+  $form[ISSA_APPROVAL_EMPLOYEE_NID] = [
+    "#title" => 'Select the webform, that can be used for the end date and name changes of the employee relation ship',
+    '#type' => 'select',
+    '#options' => $webformOptions,
+    '#default_value' => variable_get(ISSA_APPROVAL_EMPLOYEE_NID, array_keys($webformOptions)[0]),
   ];
 
   $form[ISSA_APPROVAL_EMPLOYEE_TYPE_ID] = [
