@@ -4,7 +4,7 @@
 name = ISSA Approval
 description = Views and functions for the ILGA membership approval process.
 core = 7.x
-version = "7.x-1.1"
+version = "7.x-1.2"
 package = Issa
 dependencies[] = civicrm (>=4.7)
 dependencies[] = views
