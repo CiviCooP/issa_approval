@@ -33,6 +33,10 @@ function issa_approval_permission() {
       'title' => t('Check list for applicants'),
       'description' => t('Use the ISSA approval check list for applicants.'),
     ],
+    ISSA_APPROVAL_BOARD_PERMISSION =>  [
+      'title' => t('Check list for the board'),
+      'description' => t('Show overview of the approval process'),
+    ],
   ];
 }
 
