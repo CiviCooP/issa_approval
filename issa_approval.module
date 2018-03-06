@@ -249,7 +249,6 @@ function _issa_approval_board_checklist($orgnId){
       '#items' => ["{$approvallink}","Review the {$commentslink}"]
     ];
 
-
   }
 
   return $output;
