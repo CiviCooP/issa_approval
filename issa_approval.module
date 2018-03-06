@@ -58,8 +58,8 @@ function issa_approval_menu() {
     'type' => MENU_NORMAL_ITEM,
   ];
   $items['issa-approval/board-check-list/%'] = [
-    'title' => 'Check the approval steps',
-    'description' => 'Configuration of the approval module',
+    'title' => 'Overview of a member application',
+    'description' => 'Overview of a member application',
     'page callback' => '_issa_approval_board_checklist',
     'page arguments' => array(2),
     'access arguments' => [ISSA_APPROVAL_BOARD_PERMISSION],
@@ -162,6 +162,10 @@ function _issa_approval_checklist() {
 
 function _issa_approval_board_checklist($orgnId){
 
+
+  /* some error checking fo an inclomplete application
+      this page cannot be showed
+  */
   $caseId = issa_approval_helper::caseId($orgnId);
   if(empty($caseId)){
     return "Oops - could not find a valid case for {$orgnId} ";
@@ -186,9 +190,9 @@ function _issa_approval_board_checklist($orgnId){
 
   );
 
-  $output['intro'] = [
+  $output['h3-secreterial comments'] = [
     '#type' => 'markup',
-    '#markup' => "<p>Hello this is a checklist for the board to show all the asked links and stuff</p>",
+    '#markup' => "<h3>Secreterial Comments</h3>",
   ];
 
   $mc = issa_approval_helper::caseSecretarialComments($caseId);
@@ -199,6 +203,11 @@ function _issa_approval_board_checklist($orgnId){
       '#markup' => $mc
     ];
   }
+
+  $output['h3-tasks'] = [
+     '#type' => 'markup',
+     '#markup' => "<h3>Information of the applicant</h3>",
+  ];
 
   foreach($registrationTasks as $task){
     $nodeUrl = issa_approval_helper::webform_view_link($contactId,$task['webform']);
@@ -217,7 +226,7 @@ function _issa_approval_board_checklist($orgnId){
 
     $output['colheading'] = [
       '#type' => 'markup',
-      '#markup' => '<h3>Colleagues</h3>'
+      '#markup' => '<h3>Employees of the organisation</h3>'
     ];
 
     $output['colleagues'] =
@@ -226,18 +235,18 @@ function _issa_approval_board_checklist($orgnId){
         '#theme' => 'item_list',
       ];
 
-    $commentslink = l('comments','issa-approval/view-comments/'.$orgnId);
 
-    $output['comments'] = [
+    $output['approval result'] = [
       '#type' => 'markup',
-      '#markup' => "Review the {$commentslink}",
+      '#markup' => "<h3>Voting</h3>",
     ];
 
     $approvallink = issa_approval_helper::approval_link($orgnId);
+    $commentslink = l('comments','issa-approval/view-comments/'.$orgnId);
 
     $output['approval'] = [
-      '#type' => 'markup',
-      '#markup' => "<h3>Approval</h3><p>{$approvallink}</p>"
+      '#theme' => 'item_list',
+      '#items' => ["{$approvallink}","Review the {$commentslink}"]
     ];
 
 
