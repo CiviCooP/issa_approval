@@ -194,9 +194,9 @@ function _issa_approval_board_checklist($orgnId){
 
   );
 
-  $output['h3-secreterial comments'] = [
+  $output['h3-secretarial comments'] = [
     '#type' => 'markup',
-    '#markup' => "<h3>Secreterial Comments</h3>",
+    '#markup' => "<h3>Secretarial Comments</h3>",
   ];
 
   $mc = issa_approval_helper::caseSecretarialComments($caseId);
