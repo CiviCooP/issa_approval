@@ -99,18 +99,28 @@ class issa_approval_helper {
    */
   static public function colleagues($contactId) {
     $dao = CRM_Core_DAO::executeQuery("
-        SELECT c.display_name FROM civicrm_contact c
+        SELECT c.display_name 
+        ,      c.id
+        ,      rup.contact_id_b orgn_id
+        FROM civicrm_contact c
         JOIN civicrm_relationship rup ON (c.id = rup.contact_id_a AND rup.relationship_type_id=%2)
         JOIN civicrm_relationship rdown ON (rup.contact_id_b = rdown.contact_id_a AND rdown.relationship_type_id=%3)
         WHERE rdown.contact_id_b = %1 AND rup.contact_id_a !=%1
+        AND  rup.is_active = 1 AND rdown.is_active
+        AND  (rup.end_date is null or rup.end_date > SYSDATE())
         ORDER BY c.sort_name", [
       1 => [$contactId, 'Integer'],
       2 => [variable_get(ISSA_APPROVAL_EMPLOYEE_TYPE_ID, 5), 'Integer'],
       3 => [variable_get(ISSA_APPROVAL_CONTACTPERSON_TYPE_ID, 5), 'Integer'],
     ]);
     $result = [];
+    $nodeUrl = '/node/' . variable_get(ISSA_APPROVAL_EMPLOYEE_NID);
     while ($dao->fetch()) {
-      $result[] = $dao->display_name;
+      $nodeUrlLink = $nodeUrl . '?cid1='.$dao->id . '&cid2=' . $dao->orgn_id;
+      $result[$dao->id] = array(
+        'display_name' => $dao->display_name,
+        'edit_link' => $dao->display_name . ' ' . "<a href='$nodeUrlLink'>Edit</a>",
+      );
     }
     return $result;
   }

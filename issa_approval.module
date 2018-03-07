@@ -133,7 +133,9 @@ function _issa_approval_checklist() {
     ];
   }
 
-  $colleagues = issa_approval_helper::colleagues(issa_approval_helper::currentUser());
+  $colleagues = array_map(function($element){ return $element['edit_link']; },
+    issa_approval_helper::colleagues(issa_approval_helper::currentUser())
+  );
   $collink = l('Add colleagues', 'add-colleagues');
   if (empty($colleagues)) {
     $output['colleagues'] = [
@@ -144,7 +146,7 @@ function _issa_approval_checklist() {
   else {
     $output['colleagues-pre'] = [
       '#type' => 'markup',
-      '#markup' => "<p>You added the following colleagus:</p>",
+      '#markup' => "<p>You added the following colleagues:</p>",
     ];
     $output['colleagues-list'] = [
       '#items' => $colleagues,
@@ -224,7 +226,8 @@ function _issa_approval_board_checklist($orgnId){
     '#items' => $taskLinks,
   ];
 
-  $colleagues = issa_approval_helper::colleagues($contactId);
+  $colleagues = array_map(function($element){ return $element['display_name']; },
+    issa_approval_helper::colleagues($contactId));
 
   if($colleagues) {
 
@@ -373,6 +376,7 @@ function _issa_approval_config_form($form, &$form_state) {
 function issa_approval_block_info() {
   $blocks['issa_approval_colleagues'] = [
     'info' => t('Colleagues'),
+    'cache' => DRUPAL_NO_CACHE
   ];
   $blocks['issa_approval_applicant_menu'] = [
     'info' => t('Applicant Menu'),
@@ -390,7 +394,9 @@ function issa_approval_block_view($delta = '') {
   $block = [];
   switch ($delta) {
     case 'issa_approval_colleagues':
-      $colleagues = issa_approval_helper::colleagues(issa_approval_helper::currentUser());
+      $colleagues = array_map(function($element){ return $element['edit_link']; },
+         issa_approval_helper::colleagues(issa_approval_helper::currentUser())
+      );
       $block['subject'] = t('Your organisation');
       $block['content'] = [
         'colleagues' => [
