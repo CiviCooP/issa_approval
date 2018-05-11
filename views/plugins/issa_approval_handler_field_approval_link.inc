@@ -39,7 +39,7 @@ class issa_approval_handler_field_approval_link extends views_handler_field {
       '#weight' => 99,
     );
 
-    $form['issa_approval_webform_id'] = array(
+    $form[ISSA_APPROVAL_WEBFORM_NID] = array(
       '#type' => 'select',
       '#title' => t('Approval Form'),
       '#options' => $webformOptions,
