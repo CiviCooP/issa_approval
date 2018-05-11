@@ -310,13 +310,6 @@ function _issa_approval_config_form($form, &$form_state) {
       $customFieldOptions[$value['id']] = $value['label'];
   }
 
-  $form[ISSA_APPROVAL_WEBFORM_NID] = [
-    "#title" => 'Select the webform, that must be used for the approval',
-    '#type' => 'select',
-    '#options' => $webformOptions,
-    '#default_value' => variable_get(ISSA_APPROVAL_WEBFORM_NID, array_keys($webformOptions)[0]),
-  ];
-
   $form[ISSA_APPROVAL_MEMBER_REGISTRATION_NID] = [
     "#title" => 'Select the webform, that must be used for the member registration',
     '#type' => 'select',

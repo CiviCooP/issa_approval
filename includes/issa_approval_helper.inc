@@ -218,7 +218,7 @@ class issa_approval_helper {
     }
   }
 
-  static public function approval_link($orgnId){
+  static public function approval_link($orgnId,$webform){
     $query = [
       'cid2' => issa_approval_helper::currentUser(),
       'cid1' => $orgnId,
@@ -230,7 +230,7 @@ class issa_approval_helper {
     } else {
       $label = 'Approve';
     }
-    return l($label, 'node/' . variable_get('issa_approval_webform_nid'), [
+    return l($label, 'node/' . $webform, [
         "query" => $query,
       ]
     );
