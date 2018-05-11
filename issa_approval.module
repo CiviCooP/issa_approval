@@ -491,19 +491,8 @@ function issa_approval_view_comments($form, &$form_state, $contactId) {
   $form['comments']['table']['#rows'] = $rows;
   $form['comments']['table']['#attributes'] = array('width' => '100%');
 
-  $form['submit']['#type'] = 'submit';
-  $form['submit']['#value'] = 'Back to approval view';
-  $form['submit']['#submit'] = array('_issa_approval_view_comments_submit');
   return $form;
 }
-
-/**
- * Submit for returning to member applications
- */
-function _issa_approval_view_comments_submit(){
-  drupal_goto('member-applications');
-}
-
 
 /* hook_views_api() */
 /**
