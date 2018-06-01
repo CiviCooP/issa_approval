@@ -3,7 +3,7 @@
  * Custom Drupal module for the ISSA Membership approval process
  *
  * @author Klaas Eikelboom (CiviCooP)
- * @date 19 Jan 2017
+ * @date 19 Jan 2018
  * @license AGPL-3.0
  */
 
@@ -56,14 +56,14 @@ function issa_approval_menu() {
   ];
   $items['issa-approval/check-list'] = [
     'title' => 'Check the approval steps',
-    'description' => 'Configuration of the approval module',
+    'description' => 'Checklist for the approver',
     'page callback' => '_issa_approval_checklist',
     'access arguments' => [ISSA_APPROVAL_PERMISSION],
     'type' => MENU_NORMAL_ITEM,
   ];
   $items['issa-approval/board-check-list/%'] = [
-    'title' => 'Overview of a member application',
-    'description' => 'Overview of a member application',
+    'title' => 'Overview of a member application for the board',
+    'description' => 'Overview of a member application for the board',
     'page callback' => '_issa_approval_board_checklist',
     'page arguments' => array(2),
     'access arguments' => [ISSA_APPROVAL_BOARD_PERMISSION],
@@ -182,6 +182,7 @@ function _issa_approval_board_checklist($orgnId){
     return  "Oops - could not find a valid contact person for {$orgnId}";
   }
 
+  // in the $output var the form is generated
   $output = [];
   $registrationTasks  = array(
     array('text' => t('Membership registration form'),
@@ -283,6 +284,7 @@ function _issa_approval_membership_registration() {
  */
 function _issa_approval_config_form($form, &$form_state) {
 
+  // Option list of all the created webforms
   $query = db_query("SELECT nid, title FROM {node} WHERE type='webform'");
   $webformOptions = [];
   $records = $query->fetchAll();
@@ -389,6 +391,10 @@ function issa_approval_block_info() {
 
 /**
  * Implementation of a hook that adds blocks
+ * Two blocks are added
+ * - the colleagues of the logged in person
+ * - a menu linked to the webforms that are used gather info for the
+ *   approval process
  * @param string $delta
  *
  * @return array
@@ -433,11 +439,12 @@ function issa_approval_block_view($delta = '') {
 }
 
 /**
- * Generates the form that shows the comments on a vote.
+ * Generates the form that shows the comments on a vote. Included are the
+ * name and the email of the voter.
  *
  * @param $form
  * @param $form_state
- * @param $contactId
+ * @param $contactId of the applicant
  *
  * @return array
  * @throws \CiviCRM_API3_Exception
