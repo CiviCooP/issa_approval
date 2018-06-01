@@ -476,6 +476,9 @@ function issa_approval_view_comments($form, &$form_state, $contactId) {
 
   $form = array();
   $form['case']['#markup'] = "Applicant : $orgname";
+  $form['contactId']['#type'] = 'hidden';
+  $form['contactId']['#value'] = $contactId;
+
 
   $form['comments']['table']['#theme'] = 'table';
   $form['comments']['table']['#header'] = [
@@ -484,8 +487,19 @@ function issa_approval_view_comments($form, &$form_state, $contactId) {
   $form['comments']['table']['#rows'] = $rows;
   $form['comments']['table']['#attributes'] = array('width' => '100%');
 
+  $form['submit']['#type'] = 'submit';
+  $form['submit']['#value'] = "Back to overview of $orgname";
+  $form['submit']['#submit'] = array('_issa_approval_view_comments_submit');
   return $form;
 }
+
+/**
+ * Submit for returning to member applications
+ */
+function _issa_approval_view_comments_submit($form){
+  drupal_goto('issa-approval/board-check-list/'.$form['contactId']['#value']);
+}
+
 
 /* hook_views_api() */
 /**
