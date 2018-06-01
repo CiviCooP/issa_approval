@@ -382,6 +382,7 @@ function issa_approval_block_info() {
   ];
   $blocks['issa_approval_applicant_menu'] = [
     'info' => t('Applicant Menu'),
+    'cache' => DRUPAL_NO_CACHE
   ];
   return $blocks;
 }
