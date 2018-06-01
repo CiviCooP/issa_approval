@@ -221,10 +221,12 @@ function _issa_approval_board_checklist($orgnId){
         $taskLinks [] = l($task['text'],$nodeUrl);
     }
   }
-  $output['tasks'] = [
-    '#theme' => 'item_list',
-    '#items' => $taskLinks,
-  ];
+  if(isset($taskLinks)) {
+    $output['tasks'] = [
+      '#theme' => 'item_list',
+      '#items' => $taskLinks,
+    ];
+  }
 
   $colleagues = array_map(function($element){ return $element['display_name']; },
     issa_approval_helper::colleagues($contactId));
