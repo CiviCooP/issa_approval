@@ -248,7 +248,7 @@ function _issa_approval_board_checklist($orgnId){
       '#markup' => "<h3>Voting</h3>",
     ];
 
-    $approvallink = issa_approval_helper::approval_link($orgnId);
+    $approvallink = issa_approval_helper::approval_link($orgnId,variable_get(ISSA_APPROVAL_WEBFORM_NID));
     $commentslink = l('comments','issa-approval/view-comments/'.$orgnId);
 
     $output['approval'] = [
