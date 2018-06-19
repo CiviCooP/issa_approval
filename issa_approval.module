@@ -499,7 +499,7 @@ function issa_approval_view_comments($form, &$form_state, $contactId) {
 
   $form['comments']['table']['#theme'] = 'table';
   $form['comments']['table']['#header'] = [
-    'Date','Details','Agreement','Board Member','Email Board Member'
+    'Date','Details','Agreement','Comments by','Email'
   ];
   $form['comments']['table']['#rows'] = $rows;
   $form['comments']['table']['#attributes'] = array('width' => '100%');
