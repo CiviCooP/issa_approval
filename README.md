@@ -14,6 +14,11 @@ For the International Step by Step Association an approval process is created. T
 
 To configure the checklists and the blocks for use with the required webforms use the configuration screen at `/admin/config/system/issa-approval`
 
+## Permissions
+
+- `issa approval check list` - gives access to the applicant checklist
+- `issa approval board` - gives access to the boardmembers checklist and the view with the voters
+
 ## And ...
 
 To create a Custom Url in a webform that returns to the checklist of an organisation use `/issa-approval/board-check-list/[submission:contact-id:1]`
