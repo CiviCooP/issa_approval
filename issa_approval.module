@@ -74,7 +74,7 @@ function issa_approval_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => array('issa_approval_view_comments',2),
     'access callback' => 'user_access',
-    'access arguments' => [ISSA_APPROVAL_PERMISSION],
+    'access arguments' => [ISSA_APPROVAL_BOARD_PERMISSION],
   );
   return $items;
 }
