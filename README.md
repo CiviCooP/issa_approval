@@ -12,7 +12,7 @@ For the International Step by Step Association an approval process is created. T
 
 ## Configuration
 
-To configure the checklists and the blocks for use with the required webforms us an configuration screen `/admin/config/system/issa-approval`
+To configure the checklists and the blocks for use with the required webforms use the configuration screen at `/admin/config/system/issa-approval`
 
 ## And ...
 
