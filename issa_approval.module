@@ -199,7 +199,7 @@ function _issa_approval_board_checklist($orgnId){
 
   $output['h3-secretarial comments'] = [
     '#type' => 'markup',
-    '#markup' => "<h3>Secretarial Comments</h3>",
+    '#markup' => "<h3>Membership Application Assessment Sheet</h3>",
   ];
 
   $mc = issa_approval_helper::caseSecretarialComments($caseId);
